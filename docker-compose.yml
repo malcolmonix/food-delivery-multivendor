@@ -1,0 +1,71 @@
+services:
+  web:
+    build:
+      context: ./enatega-multivendor-web
+    volumes:
+      - ./enatega-multivendor-web:/app
+      - /app/node_modules
+    ports:
+      - '3000:3000'
+    environment:
+      - NODE_ENV=development
+    tty: true
+
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: enatega
+      POSTGRES_PASSWORD: enatega
+      POSTGRES_DB: enatega
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  admin:
+    build:
+      context: ./enatega-multivendor-admin
+    volumes:
+      - ./enatega-multivendor-admin:/app
+      - /app/node_modules
+    ports:
+      - '3001:3001'
+    environment:
+      - NODE_ENV=development
+    tty: true
+
+  rider:
+    build:
+      context: ./enatega-multivendor-rider
+    volumes:
+      - ./enatega-multivendor-rider:/app
+      - /app/node_modules
+    ports:
+      - '19000:19000'
+      - '19001:19001'
+      - '19002:19002'
+    environment:
+      - EXPO_DEVTOOLS_LISTEN_ADDRESS=0.0.0.0
+    tty: true
+
+  store:
+    build:
+      context: ./enatega-multivendor-store
+    volumes:
+      - ./enatega-multivendor-store:/app
+      - /app/node_modules
+    ports:
+      - '19010:19000'
+      - '19011:19001'
+      - '19012:19002'
+    environment:
+      - EXPO_DEVTOOLS_LISTEN_ADDRESS=0.0.0.0
+    tty: true
+
+volumes:
+  pgdata:
+
+# Notes:
+# - This compose file is intended for development. It mounts local code into containers.
+# - For production, build Next apps and serve static files with nginx and build native apps with CI.
