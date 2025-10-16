@@ -26,8 +26,20 @@ import { Subscription } from "zen-observable-ts";
 
 export const useSetupApollo = (): ApolloClient<NormalizedCacheObject> => {
   // const { SERVER_URL, WS_SERVER_URL } = getEnv(ENV);
-  const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
-  const WS_SERVER_URL = process.env.NEXT_PUBLIC_WS_SERVER_URL;
+  // Provide sensible local defaults for development so the app can point to the
+  // local sqlite GraphQL backend without changing production env files.
+  const envServerUrl = process.env.NEXT_PUBLIC_SERVER_URL;
+  const envWsUrl = process.env.NEXT_PUBLIC_WS_SERVER_URL;
+
+  const isDev = process.env.NODE_ENV === 'development' || typeof window !== 'undefined' && window.location.hostname === 'localhost';
+
+  const SERVER_URL = envServerUrl && envServerUrl.length > 0
+    ? envServerUrl
+    : (isDev ? 'http://localhost:4000/' : '');
+
+  const WS_SERVER_URL = envWsUrl && envWsUrl.length > 0
+    ? envWsUrl
+    : (isDev ? 'ws://localhost:4000/' : '');
 
   const cache = new InMemoryCache();
 

@@ -113,7 +113,8 @@ const Layout = ({ children }: IProvider) => {
   }, [user]);
 
   useEffect(() => {
-    if ('serviceWorker' in navigator) {
+    // Only register service worker in production to avoid dev cache warnings
+    if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
       navigator.serviceWorker
         .register('/firebase-messaging-sw.js')
         .then((registration) => {

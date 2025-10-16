@@ -147,7 +147,7 @@ export default function RestaurantDetailsForm({
         showToast({
           type: 'error',
           title: t('Create Store'),
-          message: t(`Store Creation Failed - Please select a vendor.`),
+          message: t(`Store Creation Failed - Please select a vendor_`),
           duration: 2500,
         });
         return;

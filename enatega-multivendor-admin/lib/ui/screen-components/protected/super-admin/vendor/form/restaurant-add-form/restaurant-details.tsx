@@ -150,7 +150,7 @@ export default function RestaurantDetails({
         showToast({
           type: 'error',
           title: `${vendorId ? t('Edit') : t('Create')} ${t('Vendor')}`,
-          message: t(`Store Creation Failed, Please select a vendor`),
+          message: t(`Store Creation Failed - Please select a vendor_`),
           duration: 2500,
         });
         return;

@@ -14,7 +14,7 @@ export default function OTPVerificationMain() {
         <Card>
           <div className="mb-2 flex flex-col items-center p-2">
             <span className="text-xl">
-              We have sent OTP code to john@email.com
+              We have sent OTP code to john@email_com
             </span>
             <span className="text-sm text-gray-400">
               Please check your inbox
