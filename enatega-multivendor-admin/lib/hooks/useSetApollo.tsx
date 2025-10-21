@@ -13,24 +13,29 @@ import {
 import { SubscriptionClient } from 'subscriptions-transport-ws';
 import { getMainDefinition } from '@apollo/client/utilities';
 import { WebSocketLink } from '@apollo/client/link/ws';
-import { onError } from '@apollo/client/link/error'; // Import onError utility
+import { onError } from '@apollo/client/link/error';
 
 // Utility imports
 import { Subscription } from 'zen-observable-ts';
 import { APP_NAME } from '../utils/constants';
+import { getBackendEndpoint } from '../utils/backend-config';
 
 export const useSetupApollo = (): ApolloClient<NormalizedCacheObject> => {
   const { SERVER_URL, WS_SERVER_URL } = useConfiguration();
 
   const cache = new InMemoryCache();
 
+  // Use standardized backend configuration with automatic discovery
+  const serverUrl = SERVER_URL || 'http://localhost:4000/';
+  const wsUrl = WS_SERVER_URL || 'ws://localhost:4000/';
+
   const httpLink = createHttpLink({
-    uri: `${SERVER_URL}graphql`,
+    uri: `${serverUrl}graphql`,
   });
 
   // WebSocketLink with error handling
   const wsLink = new WebSocketLink(
-    new SubscriptionClient(`${WS_SERVER_URL}graphql`, {
+    new SubscriptionClient(`${wsUrl}graphql`, {
       reconnect: true,
       timeout: 30000,
       lazy: true,

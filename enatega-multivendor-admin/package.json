@@ -17,7 +17,10 @@
     "prettier": "prettier --write .",
     "prepare": "husky",
     "cy:open": "cypress open",
-    "cy:run": "cypress run"
+    "cy:run": "cypress run",
+    "test:config": "node -e \"require('./lib/utils/configuration-test').runAllTests()\"",
+    "test:integration": "cypress run",
+    "setup": "npm install && npm run test:config"
   },
   "dependencies": {
     "@apollo/client": "^3.11.8",
