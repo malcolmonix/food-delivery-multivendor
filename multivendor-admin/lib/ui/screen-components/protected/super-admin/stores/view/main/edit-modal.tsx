@@ -19,8 +19,9 @@ export default function EditStoreModal({ store, isOpen, onClose, onSave, isLoadi
     _id: store._id,
     name: store.name || '',
     address: store.address || '',
-    phone: (store as any).phone || '',
-    image: store.image || '',
+    phone: store.phone || (store as any).phone || '',
+    image: store.image || '', // banner picture
+    logo: store.logo || '',   // display picture
     deliveryTime: store.deliveryTime || '',
     minimumOrder: store.minimumOrder || 0,
     commissionRate: store.commissionRate || 0,
@@ -97,10 +98,10 @@ export default function EditStoreModal({ store, isOpen, onClose, onSave, isLoadi
                 />
               </div>
 
-              {/* Image URL */}
+              {/* Banner Image URL */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t('Image URL')}
+                  {t('Banner Image URL')}
                 </label>
                 <input
                   type="text"
@@ -109,6 +110,36 @@ export default function EditStoreModal({ store, isOpen, onClose, onSave, isLoadi
                   onChange={handleChange}
                   className="w-full p-2 border border-gray-300 rounded"
                 />
+                {formData.image ? (
+                  <div className="mt-2 flex items-center gap-2">
+                    <img src={formData.image} alt="banner" className="w-20 h-12 object-cover rounded border" />
+                    <button type="button" onClick={() => setFormData(prev => ({ ...prev, image: '' }))} className="text-sm text-red-600">
+                      {t('Clear')}
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+
+              {/* Logo URL */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {t('Logo URL')}
+                </label>
+                <input
+                  type="text"
+                  name="logo"
+                  value={formData.logo}
+                  onChange={handleChange}
+                  className="w-full p-2 border border-gray-300 rounded"
+                />
+                {formData.logo ? (
+                  <div className="mt-2 flex items-center gap-2">
+                    <img src={formData.logo} alt="logo" className="w-12 h-12 object-cover rounded border" />
+                    <button type="button" onClick={() => setFormData(prev => ({ ...prev, logo: '' }))} className="text-sm text-red-600">
+                      {t('Clear')}
+                    </button>
+                  </div>
+                ) : null}
               </div>
 
               {/* Delivery Time */}

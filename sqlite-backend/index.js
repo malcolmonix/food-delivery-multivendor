@@ -6,7 +6,7 @@ import { open } from 'sqlite';
 import { typeDefs, resolvers } from './schema.js';
 
 const app = express();
-// Allow requests from the admin UI
+// Allow requests from the admin UI and external devices
 app.use(
   cors({
     origin: [
@@ -14,6 +14,8 @@ app.use(
       'http://localhost:3001',
       'http://127.0.0.1:3000',
       'http://127.0.0.1:3001',
+      'http://172.20.10.7:3000',
+      'http://172.20.10.7:3001',
     ],
     credentials: true,
     optionsSuccessStatus: 200,

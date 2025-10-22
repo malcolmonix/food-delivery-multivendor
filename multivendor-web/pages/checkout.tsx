@@ -1,7 +1,7 @@
 import React from 'react';
 import { gql } from '@apollo/client';
 import client from '../lib/apolloClient';
-import { useCart } from '../lib/cart';
+import { useCart } from '../lib/context/cart.context';
 import { USER_CURRENT_LOCATION_LS_KEY } from '../components/CitySearch';
 
 const CREATE_ORDER = gql`

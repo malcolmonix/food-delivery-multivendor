@@ -9,16 +9,19 @@ const foodImages = [
 ];
 
 function RandomFoodBanner() {
-  // Choose once and keep stable across re-renders to avoid flicker while typing/searching
-  const imageRef = React.useRef<string>(
-    foodImages[Math.floor(Math.random() * foodImages.length)]
-  );
-  const randomImage = imageRef.current;
+  // Render the same src on server and first client paint to avoid hydration mismatch,
+  // then swap to a random image after mount.
+  const [src, setSrc] = React.useState<string>(foodImages[0]);
+  React.useEffect(() => {
+    const next = foodImages[Math.floor(Math.random() * foodImages.length)];
+    setSrc(next);
+  }, []);
+
   return (
     <div style={{ width: '100%', marginBottom: '1rem' }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={randomImage}
+        src={src}
         alt="Delicious food"
         style={{ width: '100%', maxHeight: 320, objectFit: 'cover', borderRadius: 8, boxShadow: '0 6px 18px rgba(0,0,0,0.15)' }}
       />

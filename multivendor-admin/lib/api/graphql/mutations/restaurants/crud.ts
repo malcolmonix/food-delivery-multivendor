@@ -6,6 +6,7 @@ export const UPDATE_RESTAURANT = gql`
       _id
       name
       image
+      logo
       address
       phone
       orderPrefix

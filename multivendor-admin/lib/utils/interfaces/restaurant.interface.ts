@@ -3,9 +3,11 @@ export interface IRestaurantResponse {
   unique_restaurant_id: string;
   name: string;
   image: string;
+  logo?: string;
   orderPrefix: string;
   slug: string;
   address: string;
+  phone?: string;
   deliveryTime: number;
   minimumOrder: number;
   isActive: boolean;

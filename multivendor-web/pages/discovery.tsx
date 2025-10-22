@@ -1,6 +1,7 @@
 import React from 'react';
 import { gql } from '@apollo/client';
 import client from '../lib/apolloClient';
+import RestaurantCard from '../components/RestaurantCard';
 
 const NEAR_BY_RESTAURANTS_PREVIEW = gql`
   fragment RestaurantPreviewFields on RestaurantPreview {
@@ -95,15 +96,17 @@ export default function DiscoveryPage() {
       {restaurants.length === 0 ? (
         <div>No restaurants found for the selected location.</div>
       ) : (
-        <ul style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 16 }}>
+        <ul style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 16 }}>
           {restaurants.map((r) => (
-            <li key={r._id} style={{ listStyle: 'none', border: '1px solid #eee', borderRadius: 8, padding: 12 }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              {r.image ? (
-                <img src={r.image} alt={r.name} style={{ width: '100%', height: 120, objectFit: 'cover', borderRadius: 6, marginBottom: 8 }} />
-              ) : null}
-              <div style={{ fontWeight: 600 }}>{r.name}</div>
-              <div style={{ color: '#6b7280', fontSize: 12 }}>{(r.cuisines || []).join(', ')}</div>
+            <li key={r._id} style={{ listStyle: 'none' }}>
+              <RestaurantCard
+                id={r._id}
+                name={r.name}
+                image={r.image}
+                logo={r.logo}
+                cuisines={r.cuisines}
+                deliveryTime={r.deliveryTime}
+              />
             </li>
           ))}
         </ul>
