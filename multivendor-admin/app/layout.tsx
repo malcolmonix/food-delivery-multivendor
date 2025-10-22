@@ -1,17 +1,24 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { ConditionalConnectionStatus } from '../components/ConditionalConnectionStatus';
+import { NextIntlClientProvider } from 'next-intl';
+import { getMessages } from 'next-intl/server';
 
 export const metadata: Metadata = {
   title: 'Multivendor Admin',
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const locale = 'en'; // Default locale
+  const messages = await getMessages();
+
   return (
-    <html lang="en">
+    <html lang={locale}>
       <body>
-        <ConditionalConnectionStatus />
-        {children}
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <ConditionalConnectionStatus />
+          {children}
+        </NextIntlClientProvider>
       </body>
     </html>
   );

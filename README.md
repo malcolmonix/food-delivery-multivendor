@@ -268,6 +268,34 @@ npm start
 
 After running these commands, the application will be available at [http://localhost:3000](http://localhost:3000) in your web browser.
 
+### SQLite Backend (local dev)
+
+For lightweight local development, a SQLite-backed GraphQL server is available in `sqlite-backend/`.
+
+**⚠️ Port policy (REQUIRED):**
+- The SQLite backend **MUST** run on **http://localhost:4000**
+- Do not change this port. The web apps (`multivendor-web`, `enatega-multivendor-web`) depend on port 4000 for:
+  - Menu listing and restaurant grid
+  - Purchase and cart management  
+  - Checkout and order placement
+- See `sqlite-backend/PORT-POLICY.md` for detailed policy and troubleshooting
+
+**Quick start:**
+```bash
+cd sqlite-backend
+npm install
+npm start
+# GraphQL: http://localhost:4000/graphql
+```
+
+**Troubleshooting:**
+- **"Failed to fetch" / Empty restaurant list:** 
+  - Verify backend is running: `netstat -ano | Select-String ":4000"`
+  - Check web app `.env.local` has: `NEXT_PUBLIC_SERVER_URL=http://localhost:4000/`
+  - Restart web app after changing `.env.local`
+- **Port already in use:** Stop `dev-backend` or other service on port 4000 before starting
+- **Detailed fixes:** See `sqlite-backend/RESTAURANT-LIST-FIX.md`
+
 ### Enatega Customer App (React Native)
 
 The customer mobile application allows users to browse restaurants and place orders on their mobile devices.

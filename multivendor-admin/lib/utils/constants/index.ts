@@ -3,3 +3,4 @@ export * from './local-storage';
 export * from './routes';
 export * from './strings';
 export * from './colors';
+export * from './restaurant';

@@ -23,7 +23,7 @@
         "app/*"
       ],
       "@/components/*": [
-        "lib/components/*"
+        "components/*"
       ]
     },
     "allowJs": true,

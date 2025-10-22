@@ -1,0 +1,1 @@
+export const RESTAURANTS_TABS: string[] = ['Actual', 'Cloned'];

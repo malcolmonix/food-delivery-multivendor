@@ -28,7 +28,7 @@ import './global.css';
 // Apollo
 import { useSetupApollo } from '@/lib/hooks/useSetApollo';
 
-export default function RootLayout({
+export default function LocalizedLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -42,26 +42,21 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="en">
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <FontawesomeConfig />
-      </head>
-      <body className={'flex flex-col flex-wrap'}>
-        <PrimeReactProvider value={value}>
-          <ApolloProvider client={client}>
-            <ConfigurationProvider>
-              <LayoutProvider>
-                <UserProvider>
-                  <SidebarProvider>
-                    <ToastProvider>{children}</ToastProvider>
-                  </SidebarProvider>
-                </UserProvider>
-              </LayoutProvider>
-            </ConfigurationProvider>
-          </ApolloProvider>
-        </PrimeReactProvider>
-      </body>
-    </html>
+    <>
+      <FontawesomeConfig />
+      <PrimeReactProvider value={value}>
+        <ApolloProvider client={client}>
+          <ConfigurationProvider>
+            <LayoutProvider>
+              <UserProvider>
+                <SidebarProvider>
+                  <ToastProvider>{children}</ToastProvider>
+                </SidebarProvider>
+              </UserProvider>
+            </LayoutProvider>
+          </ConfigurationProvider>
+        </ApolloProvider>
+      </PrimeReactProvider>
+    </>
   );
 }

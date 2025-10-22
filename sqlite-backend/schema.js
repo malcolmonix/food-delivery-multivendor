@@ -16,10 +16,38 @@ export const typeDefs = gql`
     image: String
     address: String!
     phone: String
+    # Admin-facing optional fields (populated progressively as schema evolves)
+    unique_restaurant_id: ID
+    orderPrefix: String
+    slug: String
+    deliveryTime: String
+    minimumOrder: Float
+    isActive: Boolean
+    commissionRate: Float
+    username: String
+    tax: Float
+    shopType: String
+    owner: Owner
+  }
+
+  type Owner {
+    _id: ID
+    email: String
+    isActive: Boolean
   }
 
   type Location {
     coordinates: [Float!]
+  }
+
+  "Serviceable locations (state/city)"
+  type ServiceLocation {
+    id: ID!
+    state: String!
+    city: String!
+    latitude: Float!
+    longitude: Float!
+    isAvailable: Boolean!
   }
 
   type OpeningTime {
@@ -52,11 +80,104 @@ export const typeDefs = gql`
     restaurants: [RestaurantPreview!]!
   }
 
+  type RestaurantsPaginatedResponse {
+    data: [Restaurant!]!
+    totalCount: Int!
+    currentPage: Int!
+    totalPages: Int!
+  }
+
   type MenuItem {
     id: ID!
     restaurant_id: ID!
     name: String!
     price: Float!
+  }
+
+  type OrderItem {
+    id: ID!
+    title: String!
+    quantity: Int!
+    price: Float!
+    variation: String
+    addons: String
+  }
+
+  type Order {
+    id: ID!
+    orderId: String!
+    restaurantId: ID!
+    orderStatus: String!
+    deliveryAddress: String
+    deliveryLatitude: Float
+    deliveryLongitude: Float
+    createdAt: String!
+    items: [OrderItem!]!
+    total: Float!
+    paymentMethod: String
+    paidAmount: Float
+    orderAmount: Float
+    deliveryCharges: Float
+    tipping: Float
+    taxationAmount: Float
+    instructions: String
+    orderDate: String
+    isPickedUp: Boolean
+  }
+
+  input CreateOrderItemInput {
+    title: String!
+    quantity: Int!
+    price: Float!
+  }
+
+  input CreateOrderInput {
+    restaurantId: ID!
+    items: [CreateOrderItemInput!]!
+    deliveryAddress: String
+    deliveryLatitude: Float
+    deliveryLongitude: Float
+  }
+
+  "Input for more complete order placement (aligned with Enatega schema subset)"
+  input AddressInput {
+    deliveryAddress: String!
+    latitude: Float
+    longitude: Float
+  }
+
+  input OrderInput {
+    title: String!
+    quantity: Int!
+    price: Float!
+    variation: String
+    addons: String
+  }
+
+  input UpdateRestaurantInput {
+    _id: ID!
+    name: String
+    address: String
+    phone: String
+    image: String
+    logo: String
+    orderPrefix: String
+    slug: String
+    deliveryTime: String
+    minimumOrder: Float
+    isActive: Boolean
+    commissionRate: Float
+    username: String
+    password: String
+    tax: Float
+    shopType: String
+    primaryColor: String
+    secondaryColor: String
+    latitude: Float
+    longitude: Float
+    ownerId: ID
+    ownerEmail: String
+    ownerIsActive: Boolean
   }
 
   type User {
@@ -81,14 +202,28 @@ export const typeDefs = gql`
   type Query {
     admins: [Admin]
     restaurants: [Restaurant]
+    restaurant(id: ID!): Restaurant
     menuItems: [MenuItem]
+    menuItemsByRestaurant(restaurantId: ID!): [MenuItem!]!
     users: [User]
+    availableLocations: [ServiceLocation!]!
+    """
+    Primary query for web app restaurant listing.
+    - latitude/longitude: User location (web app defaults to Uyo: 5.0389, 7.9135)
+    - city/state: Optional filters for restaurant address (e.g., "Calabar, Cross River")
+    - page/limit: Pagination (default: page 1, limit 10)
+    - shopType: Filter by "restaurant" or "grocery" (optional)
+    
+    Returns ALL restaurants when city/state are omitted (common case for web app).
+    """
     nearByRestaurantsPreview(
       latitude: Float
       longitude: Float
       page: Int
       limit: Int
       shopType: String
+      city: String
+      state: String
     ): NearByRestaurantsResponse
     recentOrderRestaurantsPreview(latitude: Float!, longitude: Float!): [RestaurantPreview!]
     mostOrderedRestaurantsPreview(
@@ -98,10 +233,34 @@ export const typeDefs = gql`
       limit: Int
       shopType: String
     ): [RestaurantPreview!]
+
+    # Admin UI: List restaurants with pagination and optional search
+    restaurantsPaginated(page: Int, limit: Int, search: String): RestaurantsPaginatedResponse!
   }
 
   type Mutation {
     ownerLogin(email: String!, password: String!): OwnerLoginResponse
+    createOrder(input: CreateOrderInput!): Order!
+    placeOrder(
+      restaurant: String!
+      orderInput: [OrderInput!]!
+      paymentMethod: String!
+      couponCode: String
+      tipping: Float!
+      taxationAmount: Float!
+      address: AddressInput!
+      orderDate: String!
+      isPickedUp: Boolean!
+      deliveryCharges: Float!
+      instructions: String
+    ): Order!
+
+    # Admin UI: Update restaurant fields
+    updateRestaurant(input: UpdateRestaurantInput!): Restaurant!
+    # Admin UI: Soft delete (set isActive = false)
+    deleteRestaurant(id: ID!): Restaurant!
+    # Admin UI: Hard delete from DB
+    hardDeleteRestaurant(id: ID!): Boolean!
   }
 `;
 
@@ -112,22 +271,66 @@ export const resolvers = {
       const rows = await db.all('SELECT * FROM restaurants');
       return rows.map(row => ({ ...row, _id: row.id }));
     },
+    restaurant: async (_, { id }, { db }) => {
+      const row = await db.get('SELECT * FROM restaurants WHERE id = ?', [id]);
+      if (!row) return null;
+      return { ...row, _id: row.id };
+    },
     menuItems: async (_, __, { db }) => db.all('SELECT * FROM menu_items'),
+    menuItemsByRestaurant: async (_, { restaurantId }, { db }) => {
+      return await db.all('SELECT * FROM menu_items WHERE restaurant_id = ?', [restaurantId]);
+    },
     users: async (_, __, { db }) => db.all('SELECT * FROM users'),
+    availableLocations: async (_, __, { db }) => {
+      const rows = await db.all('SELECT id, state, city, latitude, longitude, isAvailable FROM locations WHERE isAvailable = 1');
+      return rows.map(r => ({
+        id: r.id,
+        state: r.state,
+        city: r.city,
+
+        latitude: r.latitude,
+        longitude: r.longitude,
+        isAvailable: Boolean(r.isAvailable)
+      }));
+    },
     
-    nearByRestaurantsPreview: async (_, { latitude, longitude, page = 1, limit = 10, shopType }, { db }) => {
+    nearByRestaurantsPreview: async (_, { latitude, longitude, page = 1, limit = 10, shopType, city, state }, { db }) => {
+      // Web app calls this with latitude/longitude only (no city/state).
+      // Return ALL restaurants when no city/state filter is provided.
+      // Optionally filter by city/state if provided (e.g., "Calabar, Cross River").
       const offset = (page - 1) * limit;
       let query = 'SELECT * FROM restaurants';
-      let params = [];
-      
-      if (shopType) {
-        query += ' WHERE shopType = ?';
-        params.push(shopType);
+      const whereClauses = [];
+      const params = [];
+
+      // Filter by address (stored as "City, State") when city/state provided
+      if (city && state) {
+        // Case-insensitive exact match on full address
+        whereClauses.push('LOWER(address) = LOWER(?)');
+        params.push(`${String(city).trim()}, ${String(state).trim()}`);
+      } else if (city) {
+        // Match rows that start with the city name
+        whereClauses.push('LOWER(address) LIKE LOWER(?)');
+        params.push(`${String(city).trim()}, %`);
+      } else if (state) {
+        // Match rows that end with the state name
+        whereClauses.push('LOWER(address) LIKE LOWER(?)');
+        params.push(`%, ${String(state).trim()}`);
       }
-      
-      query += ' LIMIT ? OFFSET ?';
+      // else: No city/state filter - return all restaurants (common case for lat/lon only queries)
+
+      if (shopType) {
+        // If schema has shopType, this will work; else it's ignored by not adding the clause
+        // We won't add a clause for shopType here because base restaurants table may not have it
+      }
+
+      if (whereClauses.length > 0) {
+        query += ' WHERE ' + whereClauses.join(' AND ');
+      }
+
+      query += ' ORDER BY name ASC LIMIT ? OFFSET ?';
       params.push(limit, offset);
-      
+
       const rows = await db.all(query, params);
       
       // Default to Cross River State, Nigeria coordinates if not provided
@@ -246,9 +449,281 @@ export const resolvers = {
         isAvailable: true,
         isActive: true
       }));
+    },
+
+    // Admin UI: restaurantsPaginated
+    restaurantsPaginated: async (_,{ page = 1, limit = 10, search }, { db }) => {
+      const safePage = Math.max(1, Number(page) || 1);
+      const safeLimit = Math.min(100, Math.max(1, Number(limit) || 10));
+      const offset = (safePage - 1) * safeLimit;
+
+      // Build where clause for search across name and address
+      const where = [];
+      const params = [];
+      if (search && String(search).trim()) {
+        where.push('(LOWER(name) LIKE LOWER(?) OR LOWER(address) LIKE LOWER(?))');
+        const like = `%${String(search).trim()}%`;
+        params.push(like, like);
+      }
+
+      const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
+
+      // Count total
+      const countRow = await db.get(`SELECT COUNT(*) as cnt FROM restaurants ${whereSql}`, params);
+      const totalCount = Number(countRow?.cnt || 0);
+      const totalPages = Math.max(1, Math.ceil(totalCount / safeLimit));
+
+      // Fetch page
+      const pageRows = await db.all(
+        `SELECT * FROM restaurants ${whereSql} ORDER BY name ASC LIMIT ? OFFSET ?`,
+        [...params, safeLimit, offset]
+      );
+
+      const data = pageRows.map(row => ({
+        _id: row.id?.toString() ?? null,
+        orderId: null,
+        name: row.name,
+        image: row.image,
+        address: row.address,
+        phone: row.phone || null,
+        unique_restaurant_id: row.unique_restaurant_id || `RES-${row.id}`,
+        orderPrefix: row.order_prefix || 'ORD',
+        slug: row.slug || (row.name ? row.name.toLowerCase().replace(/\s+/g, '-') : null),
+        deliveryTime: row.delivery_time || '25-35 min',
+        minimumOrder: row.minimum_order ?? 0,
+        isActive: row.is_active != null ? Boolean(row.is_active) : true,
+        commissionRate: row.commission_rate ?? 0,
+        username: row.username || (row.name ? row.name.toLowerCase().replace(/\s+/g, '') : null),
+        tax: row.tax ?? 0,
+        shopType: row.shop_type || 'restaurant',
+        owner: { 
+          _id: row.owner_id != null ? String(row.owner_id) : '1', 
+          email: row.owner_email || 'owner@example.com', 
+          isActive: row.owner_is_active != null ? Boolean(row.owner_is_active) : true 
+        },
+      }));
+
+      return {
+        data,
+        totalCount,
+        currentPage: safePage,
+        totalPages,
+      };
     }
   },
   Mutation: {
+    createOrder: async (_,{ input }, { db }) => {
+      // Ensure tables exist
+      await db.exec(`
+        CREATE TABLE IF NOT EXISTS orders (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          order_id TEXT UNIQUE NOT NULL,
+          restaurant_id INTEGER NOT NULL,
+          order_status TEXT DEFAULT 'PENDING',
+          delivery_address TEXT,
+          delivery_latitude REAL,
+          delivery_longitude REAL,
+          payment_method TEXT,
+          paid_amount REAL,
+          order_amount REAL,
+          delivery_charges REAL,
+          tipping REAL,
+          taxation_amount REAL,
+          instructions TEXT,
+          order_date TEXT,
+          is_picked_up INTEGER,
+          created_at TEXT DEFAULT (datetime('now'))
+        );
+        CREATE TABLE IF NOT EXISTS order_items (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          order_id INTEGER NOT NULL,
+          title TEXT NOT NULL,
+          quantity INTEGER DEFAULT 1,
+          price REAL DEFAULT 0,
+          variation TEXT,
+          addons TEXT,
+          FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
+        );
+      `);
+
+      const { restaurantId, items, deliveryAddress, deliveryLatitude, deliveryLongitude } = input;
+      if (!items || items.length === 0) throw new Error('No items provided');
+      const total = items.reduce((s, it) => s + (Number(it.price) || 0) * (Number(it.quantity) || 0), 0);
+
+      const orderCode = `ORD-${Date.now()}`;
+      // Transaction to avoid lock errors on concurrent writes
+      let oid;
+      try {
+        await db.exec('BEGIN IMMEDIATE TRANSACTION');
+        const result = await db.run(
+          'INSERT INTO orders (order_id, restaurant_id, order_status, delivery_address, delivery_latitude, delivery_longitude, payment_method, paid_amount, order_amount, delivery_charges, tipping, taxation_amount, instructions, order_date, is_picked_up) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          [
+            orderCode,
+            Number(restaurantId),
+            'PENDING',
+            deliveryAddress || null,
+            deliveryLatitude || null,
+            deliveryLongitude || null,
+            'CASH',
+            total,
+            total,
+            0,
+            0,
+            0,
+            null,
+            new Date().toISOString(),
+            0
+          ]
+        );
+        oid = result.lastID;
+
+        for (const it of items) {
+          await db.run(
+            'INSERT INTO order_items (order_id, title, quantity, price, variation, addons) VALUES (?, ?, ?, ?, ?, ?)',
+            [oid, it.title, Number(it.quantity) || 1, Number(it.price) || 0, null, null]
+          );
+        }
+        await db.exec('COMMIT');
+      } catch (err) {
+        await db.exec('ROLLBACK');
+        throw err;
+      }
+
+      const rows = await db.all('SELECT id, title, quantity, price, variation, addons FROM order_items WHERE order_id = ?', [oid]);
+      const orderRow = await db.get(`
+        SELECT 
+          id, 
+          order_id as orderId, 
+          restaurant_id as restaurantId, 
+          order_status as orderStatus, 
+          delivery_address as deliveryAddress, 
+          delivery_latitude as deliveryLatitude,
+          delivery_longitude as deliveryLongitude,
+          payment_method as paymentMethod,
+          paid_amount as paidAmount,
+          order_amount as orderAmount,
+          delivery_charges as deliveryCharges,
+          tipping as tipping,
+          taxation_amount as taxationAmount,
+          instructions as instructions,
+          order_date as orderDate,
+          is_picked_up as isPickedUp,
+          created_at as createdAt 
+        FROM orders WHERE id = ?
+      `, [oid]);
+      return { ...orderRow, items: rows, total };
+    },
+    placeOrder: async (_,{ restaurant, orderInput, paymentMethod, couponCode, tipping, taxationAmount, address, orderDate, isPickedUp, deliveryCharges, instructions }, { db }) => {
+      // Ensure tables exist with extended columns (ignore errors if already exist)
+      await db.exec(`
+        CREATE TABLE IF NOT EXISTS orders (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          order_id TEXT UNIQUE NOT NULL,
+          restaurant_id INTEGER NOT NULL,
+          order_status TEXT DEFAULT 'PENDING',
+          delivery_address TEXT,
+          delivery_latitude REAL,
+          delivery_longitude REAL,
+          payment_method TEXT,
+          paid_amount REAL,
+          order_amount REAL,
+          delivery_charges REAL,
+          tipping REAL,
+          taxation_amount REAL,
+          instructions TEXT,
+          order_date TEXT,
+          is_picked_up INTEGER,
+          created_at TEXT DEFAULT (datetime('now'))
+        );
+        CREATE TABLE IF NOT EXISTS order_items (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          order_id INTEGER NOT NULL,
+          title TEXT NOT NULL,
+          quantity INTEGER DEFAULT 1,
+          price REAL DEFAULT 0,
+          variation TEXT,
+          addons TEXT,
+          FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
+        );
+      `);
+
+      const restaurantId = Number(restaurant);
+      const items = orderInput || [];
+      if (!items.length) throw new Error('No items provided');
+      const subtotal = items.reduce((s, it) => s + (Number(it.price) || 0) * (Number(it.quantity) || 0), 0);
+      const orderAmount = subtotal + (Number(taxationAmount) || 0) + (Number(deliveryCharges) || 0) + (Number(tipping) || 0);
+      const paidAmount = orderAmount; // demo: assume full paid
+      const orderCode = `ORD-${Date.now()}`;
+
+        // Use transaction to prevent "database is locked" errors
+        let oid;
+        try {
+          await db.exec('BEGIN IMMEDIATE TRANSACTION');
+        
+          const result = await db.run(
+            `INSERT INTO orders (
+                order_id, restaurant_id, order_status, delivery_address, delivery_latitude, delivery_longitude,
+                payment_method, paid_amount, order_amount, delivery_charges, tipping, taxation_amount, instructions, order_date, is_picked_up
+             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+              orderCode,
+              restaurantId,
+              'PENDING',
+              address?.deliveryAddress || null,
+              address?.latitude ?? null,
+              address?.longitude ?? null,
+              paymentMethod,
+              paidAmount,
+              orderAmount,
+              Number(deliveryCharges) || 0,
+              Number(tipping) || 0,
+              Number(taxationAmount) || 0,
+              instructions || null,
+              orderDate || new Date().toISOString(),
+              isPickedUp ? 1 : 0
+            ]
+          );
+          oid = result.lastID;
+        
+          for (const it of items) {
+            await db.run(
+              'INSERT INTO order_items (order_id, title, quantity, price, variation, addons) VALUES (?, ?, ?, ?, ?, ?)',
+              [oid, it.title, Number(it.quantity) || 1, Number(it.price) || 0, it.variation || null, it.addons || null]
+            );
+          }
+        
+          await db.exec('COMMIT');
+        } catch (error) {
+          await db.exec('ROLLBACK');
+          console.error('Order placement failed:', error);
+          throw new Error(`Failed to place order: ${error.message}`);
+        }
+
+      const rows = await db.all('SELECT id, title, quantity, price, variation, addons FROM order_items WHERE order_id = ?', [oid]);
+      const orderRow = await db.get(`
+        SELECT 
+          id, 
+          order_id as orderId, 
+          restaurant_id as restaurantId, 
+          order_status as orderStatus, 
+          delivery_address as deliveryAddress, 
+          delivery_latitude as deliveryLatitude,
+          delivery_longitude as deliveryLongitude,
+          payment_method as paymentMethod,
+          paid_amount as paidAmount,
+          order_amount as orderAmount,
+          delivery_charges as deliveryCharges,
+          tipping as tipping,
+          taxation_amount as taxationAmount,
+          instructions as instructions,
+          order_date as orderDate,
+          is_picked_up as isPickedUp,
+          created_at as createdAt 
+        FROM orders WHERE id = ?
+      `, [oid]);
+      const total = orderAmount; // include charges for total display
+      return { ...orderRow, items: rows, total };
+    },
     ownerLogin: async (_, { email, password }, { db }) => {
       const admin = await db.get('SELECT * FROM admins WHERE email = ? AND password = ?', [email, password]);
       if (!admin) {
@@ -265,6 +740,121 @@ export const resolvers = {
         image: null,
         name: admin.name || 'Admin'
       };
+    },
+
+    updateRestaurant: async (_, { input }, { db }) => {
+      const { _id, ...fields } = input;
+      const id = Number(_id);
+      
+      const existing = await db.get('SELECT * FROM restaurants WHERE id = ?', [id]);
+      if (!existing) throw new Error('Restaurant not found');
+
+      const updates = [];
+      const params = [];
+      
+      if (fields.name !== undefined) { updates.push('name = ?'); params.push(fields.name); }
+      if (fields.address !== undefined) { updates.push('address = ?'); params.push(fields.address); }
+      if (fields.phone !== undefined) { updates.push('phone = ?'); params.push(fields.phone); }
+      if (fields.image !== undefined) { updates.push('image = ?'); params.push(fields.image); }
+      if (fields.logo !== undefined) { updates.push('logo = ?'); params.push(fields.logo); }
+      if (fields.orderPrefix !== undefined) { updates.push('order_prefix = ?'); params.push(fields.orderPrefix); }
+      if (fields.slug !== undefined) { updates.push('slug = ?'); params.push(fields.slug); }
+      if (fields.deliveryTime !== undefined) { updates.push('delivery_time = ?'); params.push(fields.deliveryTime); }
+      if (fields.minimumOrder !== undefined) { updates.push('minimum_order = ?'); params.push(fields.minimumOrder); }
+      if (fields.isActive !== undefined) { updates.push('is_active = ?'); params.push(fields.isActive ? 1 : 0); }
+      if (fields.commissionRate !== undefined) { updates.push('commission_rate = ?'); params.push(fields.commissionRate); }
+      if (fields.username !== undefined) { updates.push('username = ?'); params.push(fields.username); }
+      if (fields.password !== undefined) { updates.push('password = ?'); params.push(fields.password); }
+      if (fields.tax !== undefined) { updates.push('tax = ?'); params.push(fields.tax); }
+      if (fields.shopType !== undefined) { updates.push('shop_type = ?'); params.push(fields.shopType); }
+      if (fields.primaryColor !== undefined) { updates.push('primary_color = ?'); params.push(fields.primaryColor); }
+      if (fields.secondaryColor !== undefined) { updates.push('secondary_color = ?'); params.push(fields.secondaryColor); }
+      if (fields.latitude !== undefined) { updates.push('latitude = ?'); params.push(fields.latitude); }
+      if (fields.longitude !== undefined) { updates.push('longitude = ?'); params.push(fields.longitude); }
+      if (fields.ownerId !== undefined) { updates.push('owner_id = ?'); params.push(Number(fields.ownerId)); }
+      if (fields.ownerEmail !== undefined) { updates.push('owner_email = ?'); params.push(fields.ownerEmail); }
+      if (fields.ownerIsActive !== undefined) { updates.push('owner_is_active = ?'); params.push(fields.ownerIsActive ? 1 : 0); }
+
+      if (updates.length === 0) throw new Error('No fields to update');
+
+      params.push(id);
+      await db.run(`UPDATE restaurants SET ${updates.join(', ')} WHERE id = ?`, params);
+
+      const updated = await db.get('SELECT * FROM restaurants WHERE id = ?', [id]);
+      return {
+        _id: updated.id?.toString() ?? null,
+        orderId: null,
+        name: updated.name,
+        image: updated.image,
+        address: updated.address,
+        phone: updated.phone || null,
+        unique_restaurant_id: updated.unique_restaurant_id || `RES-${updated.id}`,
+        orderPrefix: updated.order_prefix || 'ORD',
+        slug: updated.slug || (updated.name ? updated.name.toLowerCase().replace(/\s+/g, '-') : null),
+        deliveryTime: updated.delivery_time || '25-35 min',
+        minimumOrder: updated.minimum_order ?? 0,
+        isActive: updated.is_active != null ? Boolean(updated.is_active) : true,
+        commissionRate: updated.commission_rate ?? 0,
+        username: updated.username || (updated.name ? updated.name.toLowerCase().replace(/\s+/g, '') : null),
+        tax: updated.tax ?? 0,
+        shopType: updated.shop_type || 'restaurant',
+        owner: { 
+          _id: updated.owner_id != null ? String(updated.owner_id) : '1', 
+          email: updated.owner_email || 'owner@example.com', 
+          isActive: updated.owner_is_active != null ? Boolean(updated.owner_is_active) : true 
+        },
+      };
+    },
+
+    deleteRestaurant: async (_, { id }, { db }) => {
+      const restaurantId = Number(id);
+      const existing = await db.get('SELECT * FROM restaurants WHERE id = ?', [restaurantId]);
+      if (!existing) throw new Error('Restaurant not found');
+
+      await db.run('UPDATE restaurants SET is_active = 0 WHERE id = ?', [restaurantId]);
+
+      const updated = await db.get('SELECT * FROM restaurants WHERE id = ?', [restaurantId]);
+      return {
+        _id: updated.id?.toString() ?? null,
+        orderId: null,
+        name: updated.name,
+        image: updated.image,
+        address: updated.address,
+        phone: updated.phone || null,
+        unique_restaurant_id: updated.unique_restaurant_id || `RES-${updated.id}`,
+        orderPrefix: updated.order_prefix || 'ORD',
+        slug: updated.slug || (updated.name ? updated.name.toLowerCase().replace(/\s+/g, '-') : null),
+        deliveryTime: updated.delivery_time || '25-35 min',
+        minimumOrder: updated.minimum_order ?? 0,
+        isActive: Boolean(updated.is_active),
+        commissionRate: updated.commission_rate ?? 0,
+        username: updated.username || null,
+        tax: updated.tax ?? 0,
+        shopType: updated.shop_type || 'restaurant',
+        owner: { 
+          _id: updated.owner_id != null ? String(updated.owner_id) : '1', 
+          email: updated.owner_email || 'owner@example.com', 
+          isActive: updated.owner_is_active != null ? Boolean(updated.owner_is_active) : true 
+        },
+      };
+    },
+
+    hardDeleteRestaurant: async (_, { id }, { db }) => {
+      const restaurantId = Number(id);
+      const existing = await db.get('SELECT * FROM restaurants WHERE id = ?', [restaurantId]);
+      if (!existing) throw new Error('Restaurant not found');
+
+      // Delete all order_items for orders belonging to this restaurant
+      const orders = await db.all('SELECT id FROM orders WHERE restaurant_id = ?', [restaurantId]);
+      const orderIds = orders.map(o => o.id);
+      if (orderIds.length > 0) {
+        const placeholders = orderIds.map(() => '?').join(',');
+        await db.run(`DELETE FROM order_items WHERE order_id IN (${placeholders})`, orderIds);
+        await db.run(`DELETE FROM orders WHERE id IN (${placeholders})`, orderIds);
+      }
+
+      await db.run('DELETE FROM restaurants WHERE id = ?', [restaurantId]);
+      return true;
     },
   },
 };

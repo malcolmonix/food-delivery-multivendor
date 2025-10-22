@@ -11,6 +11,10 @@ import {
   OrderItAgain,
   CommingSoonScreen,
 } from "@/lib/ui/screen-components/protected/home";
+import dynamic from "next/dynamic";
+import RandomFoodBanner from "@/lib/ui/useable-components/RandomFoodBanner";
+// Dynamically import Map to avoid SSR issues
+const Map = dynamic(() => import("@/app/(localized)/mapview/[slug]/components/Map"), { ssr: false });
 // ui componnet
 import CuisinesSection from "@/lib/ui/useable-components/cuisines-section";
 // hooks
@@ -92,8 +96,21 @@ export default function DiscoveryScreen() {
   }
 
   return (
-    <>
-      <DiscoveryBannerSection />
+    <div className="container-fluid px-0">
+      {/* Modern random food banner */}
+      <RandomFoodBanner />
+      {/* Modernized main banner carousel */}
+      <div className="mb-4">
+        <DiscoveryBannerSection />
+      </div>
+      {/* Map view for city vendors (Uyo, Calabar) */}
+      <div className="mb-4">
+        <h2 className="h4 fw-bold mb-3">Vendors in Your City (Uyo, Calabar)</h2>
+        {/* Example: pass city and data props as needed */}
+        <div style={{ minHeight: 400, borderRadius: 12, overflow: 'hidden' }}>
+          <Map apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''} data={restaurantsNearYou || []} center={null} />
+        </div>
+      </div>
       <OrderItAgain />
       <MostOrderedRestaurants
         data={queryData}
@@ -122,14 +139,10 @@ export default function DiscoveryScreen() {
         loading={restaurantsLoading}
         error={!!restaurantsError}
       />
-      <TopGroceryPicks
-        // // data={MostOrderedRestaurantsGroceryData}
-        // loading={mostOrderedLoading}
-        // error={!!mostorderedError}
-      />
+      <TopGroceryPicks />
       <TopRatedVendors />
       <PopularRestaurants />
       <PopularStores />
-    </>
+    </div>
   );
 }

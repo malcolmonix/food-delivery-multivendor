@@ -4,7 +4,11 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "seed:locations": "node seed-locations.js",
+    "seed:fastfoods": "node seed-fastfoods.js",
+    "migrate:admin": "node migrations/20251022_add_admin_fields.js",
+    "schema:check": "node check-schema.js"
   },
   "dependencies": {
     "apollo-server-express": "^3.12.0",

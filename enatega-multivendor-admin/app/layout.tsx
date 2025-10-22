@@ -24,6 +24,7 @@ export default async function RootLayout({
   return (
     <html lang={locale}>
        <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         {/* Microsoft Clarity */}
         <Script id="microsoft-clarity" strategy="afterInteractive">
           {`
@@ -35,7 +36,7 @@ export default async function RootLayout({
           `}
         </Script>
       </head>
-      <body>
+      <body className="flex flex-col flex-wrap">
         <NextIntlClientProvider messages={messages}>
           {children}
         </NextIntlClientProvider>
