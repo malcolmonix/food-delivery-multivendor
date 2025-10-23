@@ -71,9 +71,13 @@ export class MenuverseService {
     try {
       this.db = getMenuverseFirestore();
       if (this.db) {
-        // Ensure anonymous authentication
-        await ensureMenuverseAuth();
-        console.log('MenuVerse service initialized successfully');
+        // Try to ensure authentication (optional for read operations)
+        const user = await ensureMenuverseAuth();
+        if (user) {
+          console.log('MenuVerse service initialized with authentication');
+        } else {
+          console.log('MenuVerse service initialized without authentication');
+        }
       }
     } catch (error) {
       console.error('Failed to initialize MenuVerse service:', error);

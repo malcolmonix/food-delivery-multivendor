@@ -16,6 +16,12 @@ export default function Header() {
 
         <nav className="flex items-center gap-3">
           <Link
+            href="/menuverse-test"
+            className="hidden sm:block px-2 py-1.5 rounded-lg text-xs font-medium text-blue-700 hover:text-blue-900 hover:bg-blue-50 border border-blue-200"
+          >
+            Test
+          </Link>
+          <Link
             href="/menuverse-demo"
             className="hidden sm:block px-3 py-1.5 rounded-lg text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
           >

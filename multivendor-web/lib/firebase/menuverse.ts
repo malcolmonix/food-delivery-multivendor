@@ -64,7 +64,8 @@ export async function ensureMenuverseAuth() {
   try {
     const auth = getMenuverseAuth();
     if (!auth) {
-      throw new Error('MenuVerse auth not available');
+      console.warn('MenuVerse auth not available, proceeding without authentication');
+      return null;
     }
     
     // Check if already signed in
@@ -72,12 +73,22 @@ export async function ensureMenuverseAuth() {
       return auth.currentUser;
     }
     
-    // Sign in anonymously
-    const userCredential = await signInAnonymously(auth);
-    console.log('Signed in to MenuVerse anonymously:', userCredential.user.uid);
-    return userCredential.user;
+    try {
+      // Sign in anonymously
+      const userCredential = await signInAnonymously(auth);
+      console.log('Signed in to MenuVerse anonymously:', userCredential.user.uid);
+      return userCredential.user;
+    } catch (authError) {
+      if (authError.code === 'auth/admin-restricted-operation') {
+        console.warn('Anonymous authentication disabled. Enable it in Firebase Console: Authentication > Sign-in method > Anonymous');
+        console.warn('Proceeding without authentication - some features may be limited');
+        return null;
+      }
+      throw authError;
+    }
   } catch (error) {
     console.error('MenuVerse authentication failed:', error);
-    throw error;
+    // Don't throw error for auth issues, allow app to continue
+    return null;
   }
 }
