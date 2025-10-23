@@ -1,4 +1,4 @@
-# Consumer-Ready Features - Implementation Guide
+Moved to docs/CONSUMER-READY-FEATURES.md
 
 ## ✅ Implemented Features (10/10 Quick Wins)
 

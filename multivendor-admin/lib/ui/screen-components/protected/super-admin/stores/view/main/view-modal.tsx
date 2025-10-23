@@ -118,11 +118,11 @@ export default function ViewStoreModal({ store, isOpen, onClose }: ViewStoreModa
   );
 }
 
-function InfoField({ label, value }: { label: string; value: string }) {
+function InfoField({ label, value }: { label: string; value: string | number }) {
   return (
     <div>
       <dt className="text-sm font-medium text-gray-500 mb-1">{label}</dt>
-      <dd className="text-sm text-gray-900">{value}</dd>
+      <dd className="text-sm text-gray-900">{String(value)}</dd>
     </div>
   );
 }

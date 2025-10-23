@@ -11,6 +11,11 @@ const firebaseConfig = {
 };
 
 export function getFirebaseApp() {
+  // Validate that all required config values are present
+  if (!firebaseConfig.apiKey) {
+    throw new Error('Firebase API key is missing. Check your NEXT_PUBLIC_FIREBASE_API_KEY environment variable.');
+  }
+  
   if (!getApps().length) {
     return initializeApp(firebaseConfig);
   }
@@ -18,6 +23,11 @@ export function getFirebaseApp() {
 }
 
 export function getFirebaseAuth() {
-  const app = getFirebaseApp();
-  return getAuth(app);
+  try {
+    const app = getFirebaseApp();
+    return getAuth(app);
+  } catch (error) {
+    console.error('Error initializing Firebase Auth:', error);
+    throw error;
+  }
 }

@@ -1,99 +1,60 @@
 services:
-  web:
-    build: 
-      context: ./enatega-multivendor-web
+  sqlite-backend:
+    build:
+      context: ./sqlite-backend
       dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=development
+      # Allow local dev via browser on host
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:3001
+      # Persist DB outside the container
+      - DB_FILE=/data/enatega.db
+      - PORT=4000
     volumes:
-      - ./enatega-multivendor-web:/app
+      - ./enatega.db:/data/enatega.db
+    ports:
+      - '4000:4000'
+    tty: true
+
+  web:
+    build:
+      context: ./multivendor-web
+    volumes:
+      - ./multivendor-web:/app
       - web_node_modules:/app/node_modules
     ports:
       - '3000:3000'
     environment:
       - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=1
+      # Use localhost so the browser (on host) can reach the API published on port 4000
+      - NEXT_PUBLIC_SERVER_URL=http://localhost:4000/
     depends_on:
-      - db
-      - mongodb
+      - sqlite-backend
     tty: true
-
-  db:
-    image: postgres:15
-    restart: always
-    environment:
-      POSTGRES_USER: enatega
-      POSTGRES_PASSWORD: enatega
-      POSTGRES_DB: enatega
-    ports:
-      - '5432:5432'
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U enatega"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
 
   admin:
     build:
-      context: ./enatega-multivendor-admin
-      dockerfile: Dockerfile
+      context: ./multivendor-admin
+    volumes:
+      - ./multivendor-admin:/app
+      - admin_node_modules:/app/node_modules
     ports:
-      - '3001:3001'
+      - '3001:3000'
     environment:
       - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=1
+      - NEXT_PUBLIC_SERVER_URL=http://localhost:4000/
+      - NEXT_PUBLIC_WS_SERVER_URL=ws://localhost:4000/
+    depends_on:
+      - sqlite-backend
     tty: true
     user: "node"
-
-  rider:
-    build:
-      context: ./enatega-multivendor-rider
-      dockerfile: Dockerfile
-    ports:
-      - '19000:19000'
-      - '19001:19001'
-      - '19002:19002'
-    environment:
-      - NODE_ENV=development
-      - EXPO_DEVTOOLS_LISTEN_ADDRESS=0.0.0.0
-    tty: true
-    user: "node"
-
-  store:
-    build:
-      context: ./enatega-multivendor-store
-    volumes:
-      - ./enatega-multivendor-store:/app
-      - /app/node_modules
-    ports:
-      - '19010:19000'
-      - '19011:19001'
-      - '19012:19002'
-    environment:
-      - EXPO_DEVTOOLS_LISTEN_ADDRESS=0.0.0.0
-    tty: true
-
-  mongodb:
-    image: mongo:latest
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongodb_data:/data/db
-    environment:
-      - MONGO_INITDB_DATABASE=enatega
-    healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
-      interval: 10s
-      timeout: 10s
-      retries: 5
-      start_period: 40s
 
 volumes:
-  pgdata:
-  mongodb_data:
   web_node_modules:
   admin_node_modules:
-  rider_node_modules:
-  store_node_modules:
 
 networks:
-  app_network:
+  default:
     driver: bridge

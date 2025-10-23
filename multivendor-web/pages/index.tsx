@@ -1,7 +1,7 @@
 import React from 'react';
 import { gql } from '@apollo/client';
 import client from '../lib/apolloClient';
-import RandomFoodBanner from '../components/RandomFoodBanner';
+import HeroBanner from '../components/HeroBanner';
 import LocationPicker from '../components/LocationPicker';
 import { USER_CURRENT_LOCATION_LS_KEY } from '../components/CitySearch';
 import styles from '../styles/Home.module.css';
@@ -236,7 +236,7 @@ export default function Home() {
   return (
     <div className={styles.homeContainer}>
       <div className={gridStyles.bannerWrap}>
-        <RandomFoodBanner />
+        <HeroBanner />
         <div className={gridStyles.lpFloat}>
           <LocationPicker
             variant="compact"

@@ -1,0 +1,26 @@
+{
+  "node": {
+    "6a3fc06a131789ead73bab58bb0af93dc73f64f8": {
+      "workers": {
+        "app/_not-found/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22C%3A%5C%5CUsers%5C%5CPC%5C%5CDocuments%5C%5CAAA%5C%5Cdev%5C%5Cdispatch%5C%5Cgit%5C%5Cenatega%5C%5Cfood-delivery-multivendor%5C%5Cenatega-multivendor-admin%5C%5Clib%5C%5Cutils%5C%5Cmethods%5C%5Clocale.ts%22%2C%5B%22setUserLocale%22%2C%22getUserLocale%22%5D%5D%5D&__client_imported__=!",
+        "app/(localized)/(protected)/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22C%3A%5C%5CUsers%5C%5CPC%5C%5CDocuments%5C%5CAAA%5C%5Cdev%5C%5Cdispatch%5C%5Cgit%5C%5Cenatega%5C%5Cfood-delivery-multivendor%5C%5Cenatega-multivendor-admin%5C%5Clib%5C%5Cutils%5C%5Cmethods%5C%5Clocale.ts%22%2C%5B%22setUserLocale%22%2C%22getUserLocale%22%5D%5D%5D&__client_imported__=!"
+      },
+      "layer": {
+        "app/_not-found/page": "rsc",
+        "app/(localized)/(protected)/page": "rsc"
+      }
+    },
+    "7b1e45605a06ad8ae22c703bd766a56c91f81b9f": {
+      "workers": {
+        "app/_not-found/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22C%3A%5C%5CUsers%5C%5CPC%5C%5CDocuments%5C%5CAAA%5C%5Cdev%5C%5Cdispatch%5C%5Cgit%5C%5Cenatega%5C%5Cfood-delivery-multivendor%5C%5Cenatega-multivendor-admin%5C%5Clib%5C%5Cutils%5C%5Cmethods%5C%5Clocale.ts%22%2C%5B%22setUserLocale%22%2C%22getUserLocale%22%5D%5D%5D&__client_imported__=!",
+        "app/(localized)/(protected)/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22C%3A%5C%5CUsers%5C%5CPC%5C%5CDocuments%5C%5CAAA%5C%5Cdev%5C%5Cdispatch%5C%5Cgit%5C%5Cenatega%5C%5Cfood-delivery-multivendor%5C%5Cenatega-multivendor-admin%5C%5Clib%5C%5Cutils%5C%5Cmethods%5C%5Clocale.ts%22%2C%5B%22setUserLocale%22%2C%22getUserLocale%22%5D%5D%5D&__client_imported__=!"
+      },
+      "layer": {
+        "app/_not-found/page": "rsc",
+        "app/(localized)/(protected)/page": "rsc"
+      }
+    }
+  },
+  "edge": {},
+  "encryptionKey": "CVzU5Vu0BviOwuPqKAbs5t//qHuy/rJOF0OcLIRlors="
+}

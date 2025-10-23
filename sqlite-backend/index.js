@@ -7,16 +7,21 @@ import { typeDefs, resolvers } from './schema.js';
 
 const app = express();
 // Allow requests from the admin UI and external devices
+// Read from CORS_ORIGINS env (comma-separated), fallback to a sane default list
+const corsOrigins = (process.env.CORS_ORIGINS || '').split(',')
+  .map(o => o.trim())
+  .filter(Boolean);
+const defaultOrigins = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:3001',
+  'http://172.20.10.7:3000',
+  'http://172.20.10.7:3001',
+];
 app.use(
   cors({
-    origin: [
-      'http://localhost:3000',
-      'http://localhost:3001',
-      'http://127.0.0.1:3000',
-      'http://127.0.0.1:3001',
-      'http://172.20.10.7:3000',
-      'http://172.20.10.7:3001',
-    ],
+    origin: corsOrigins.length ? corsOrigins : defaultOrigins,
     credentials: true,
     optionsSuccessStatus: 200,
   })
@@ -34,7 +39,9 @@ async function initDbWithRetry(maxAttempts = 5) {
   let attempt = 0;
   while (attempt < maxAttempts) {
     try {
-      const db = await open({ filename: '../enatega.db', driver: sqlite3.Database });
+      // Support overriding DB location via env (e.g., inside Docker)
+      const dbFile = process.env.DB_FILE || '../enatega.db';
+      const db = await open({ filename: dbFile, driver: sqlite3.Database });
       // Concurrency-friendly pragmas
       await db.exec('PRAGMA journal_mode = WAL;');
       await db.exec('PRAGMA synchronous = NORMAL;');

@@ -3,5 +3,6 @@
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
   "/": "pages/index.js",
-  "/restaurant/[id]": "pages/restaurant/[id].js"
+  "/firebase-test": "pages/firebase-test.js",
+  "/login": "pages/login.js"
 }

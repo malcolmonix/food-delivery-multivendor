@@ -1,0 +1,15 @@
+{
+  "app\\(localized)\\page.tsx -> @/lib/ui/screens/unprotected/index": {
+    "id": "app\\(localized)\\page.tsx -> @/lib/ui/screens/unprotected/index",
+    "files": [
+      "static/css/_app-pages-browser_lib_ui_screens_unprotected_index_tsx.css",
+      "static/chunks/_app-pages-browser_lib_ui_screens_unprotected_index_tsx.js"
+    ]
+  },
+  "lib\\ui\\useable-components\\empty-search-results\\index.tsx -> lottie-react": {
+    "id": "lib\\ui\\useable-components\\empty-search-results\\index.tsx -> lottie-react",
+    "files": [
+      "static/chunks/_app-pages-browser_node_modules_lottie-react_build_index_umd_js.js"
+    ]
+  }
+}

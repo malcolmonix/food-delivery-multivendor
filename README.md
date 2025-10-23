@@ -1,63 +1,14 @@
-<div align="right">
-<a target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://github.com/Ninjas-Code-official/Enatega-Multivendor-Food-Delivery-Solution" style="text-decoration:none">
-  <img src="https://img.shields.io/badge/-0d1117?logo=facebook"  width="40" height="30">
-</a>
-<a target="_blank" href="https://www.linkedin.com/shareArticle?mini=true&url=https://github.com/Ninjas-Code-official/Enatega-Multivendor-Food-Delivery-Solution" style="text-decoration:none">
-  <img src="https://img.shields.io/badge/-0d1117?logo=linkedin"  width="40" height="30">
-</a>
-<a target="_blank" href="https://twitter.com/intent/tweet?&url=https://github.com/Ninjas-Code-official/Enatega-Multivendor-Food-Delivery-Solution&via=TWITTER-HANDLE" style="text-decoration:none">
-  <img src="https://img.shields.io/badge/-0d1117?logo=twitter" width="40" height="30">
-</a>
+# Multivendor Food Delivery System
 
-</div>
+A brand-neutral, open-source multivendor food ordering and delivery stack. This repository removes third-party branding and external promotional links. See `ARCHIVE.md` for legacy modules archived under `archive/`.
 
-<div align="center">
-  <h2>Enatega Multi Vendor Food Delivery System</h2>
-  <i>The food delivery and order management system for the future.</i>
- <br/>
-<br />
-</div>
+- Web (Next.js) in `multivendor-web/`
+- Admin (Next.js) in `multivendor-admin/`
+- GraphQL API (SQLite) in `sqlite-backend/`
 
-<div align="center">
+For local development and containerized runs, check `docker-compose.yml` and the per-app READMEs. External links and vendor badges have been intentionally removed as part of the rebranding effort.
 
-[![Static Badge](https://img.shields.io/badge/License-MIT-red)](https://github.com/Ninjas-Code-official/Enatega-Multivendor-Food-Delivery-Solution/blob/main/LICENSE)
-[![Stars](https://img.shields.io/github/stars/Ninjas-Code-official/Enatega-Multivendor-Food-Delivery-Solution.svg)](https://github.com/Ninjas-Code-official/Enatega-Multivendor-Food-Delivery-Solution/stargazers)
-[![Forks](https://img.shields.io/github/forks/Ninjas-Code-official/Enatega-Multivendor-Food-Delivery-Solution.svg)](https://github.com/Ninjas-Code-official/Enatega-Multivendor-Food-Delivery-Solution/network/members)
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/Ninjas-Code-official/Enatega-Multivendor-Food-Delivery-Solution)
-[![GitHub contributors](https://img.shields.io/github/contributors/Ninjas-Code-official/Enatega-Multivendor-Food-Delivery-Solution)](https://github.com/Ninjas-Code-official/Enatega-Multivendor-Food-Delivery-Solution/graphs/contributors)
-[![Open Pull Requests](https://img.shields.io/github/issues-pr-raw/Ninjas-Code-official/Enatega-Multivendor-Food-Delivery-Solution.svg)](https://github.com/Ninjas-Code-official/Enatega-Multivendor-Food-Delivery-Solution/pulls)
-[![Activity](https://img.shields.io/github/last-commit/Ninjas-Code-official/Enatega-Multivendor-Food-Delivery-Solution.svg)](https://github.com/Ninjas-Code-official/Enatega-Multivendor-Food-Delivery-Solution/commits/main)
-[![YouTube Channel](https://img.shields.io/badge/Watch_us-Youtube-red)](https://www.youtube.com/@ninjascode509)
-[![Company Website](https://img.shields.io/badge/Visit_us-Website-blue)](https://enatega.com)
-[![Closed Issues](https://img.shields.io/github/issues-closed/Ninjas-Code-official/Enatega-Multivendor-Food-Delivery-Solution?color=success)](https://github.com/Ninjas-Code-official/Enatega-Multivendor-Food-Delivery-Solution/issues?q=is%3Aissue+is%3Aclosed)
-[![Closed Pull Requests](https://img.shields.io/badge/Closed%20Pull%20Requests-View%20on%20GitHub-blue.svg)](https://github.com/Ninjas-Code-official/Enatega-Multivendor-Food-Delivery-Solution/pulls?q=is%3Apr+is%3Aclosed)
-
-</div>
-
-<div align="center">
-
-[![Static Badge](https://img.shields.io/badge/facebook-blue?logo=facebook&logoColor=Blue&color=%23fbfbfb)](https://www.facebook.com/enatega)
-[![Static Badge](https://img.shields.io/badge/Instagram-blue?logo=instagram&logoColor=D815BE&color=%23fcfcfc)](https://www.instagram.com/enatega.nb/)
-[![Static Badge](https://img.shields.io/badge/Twitter-blue?logo=Twitter&logoColor=blue&color=%23fcfcfc)](https://twitter.com/EnategaA)
-[![Static Badge](https://img.shields.io/badge/LinkedIn-blue?logo=LinkedIn&logoColor=darkblue&color=%23fcfcfc)](https://www.linkedin.com/company/14583783/)
-
-</div>
-
-<div align="center">
-
-  <a href="https://www.youtube.com/watch?v=00voqzkFpHU">
-    <img src="./assets/thumbnail.webp" alt="Demo video" style="border-radius: 6px; width: auto;">
-  </a>
-
-</div>
-
-<br>
-
-The Enatega Multi vendor food delivery system is perfect for customers looking to deploy a readymade and easy to use food ordering platform for their own food delivery and logistics business. Just like foodpanda and ubereats, our food delivery system can incorporate multiple restaurants as well as restaurants that operate in multiple locations. With access to the admin panel and separate applications for customers and riders, you can use this solution to create your own online food ordering and order/delivery management system instantaneously.
-
-Our solution is open source but the backend and API are proprietary, and can be obtained via paid license.
-
-<!-- Add a horizontal rule for separation -->
+---
 <hr/>
 
 ## :fast_forward: Quick Links
@@ -419,3 +370,13 @@ Then run:
 ```bash
 eas build --platform ios --profile development
 ```
+
+## Documentation
+
+- Architecture: docs/architecture.md
+- Deployment & Development Guide: docs/deployment-guide.md
+- Microservices Migration Plan: docs/microservices-plan.md
+- Production Readiness Summary: docs/production-summary.md
+- Project Progress Tracker: docs/progress-tracker.md
+
+Note: Per-module docs live under each package's docs/ folder (e.g., multivendor-web/docs, sqlite-backend/docs).
