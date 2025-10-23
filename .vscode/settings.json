@@ -1,0 +1,10 @@
+{
+  "files.exclude": {
+    "enatega-multivendor-admin": true,
+    "enatega-multivendor-app": true,
+    "enatega-multivendor-rider": true,
+    "enatega-multivendor-store": true,
+    "enatega-multivendor-web": true,
+    "archive": true
+  }
+}
