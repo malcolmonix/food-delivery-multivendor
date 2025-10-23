@@ -19,7 +19,7 @@ TODO
 - [ ] next.config image remotePatterns hardening (allow only needed domains)
 - [ ] Ensure NEXT_PUBLIC_SERVER_URL consumption is consistent across data hooks
 - [ ] Add unit tests and minimal e2e smoke (Cypress/Playwright)
-- [ ] AuthN/AuthZ integration (JWT/OAuth2), protected routes, session handling
+- [x] AuthN/AuthZ integration (Firebase Auth), protected routes, session handling - ✅ WORKING
 - [ ] Error boundaries and basic observability (Sentry or OpenTelemetry web)
 
 ## multivendor-web (Consumer web)
@@ -30,12 +30,34 @@ Implemented
 - [x] .env.local defaults API to http://localhost:4000
 - [x] Dev Dockerfile added and wired in docker-compose
 - [x] Updated documentation and guidance for Windows EPERM issues
+- [x] Firebase Authentication implementation with Google sign-in
+- [x] Auth context (FirebaseAuthProvider) for app-wide state management
+- [x] Protected routes and withAuth HOC for route protection
+- [x] Login page with modern glassmorphism design and Google sign-in
+- [x] Profile page with user info display and protected access
+- [x] Server-side token verification middleware and protected API routes
+- [x] Auth utilities (getAuthHeaders, authenticatedFetch, useFirebaseToken)
+- [x] Global Header component with auth-aware navigation
+- [x] Tailwind CSS v3 setup with responsive design system
+- [x] Next.js image configuration for remote avatars and assets
+- [x] Debug tools: firebase-test and auth-debug pages for development
+- [x] Comprehensive documentation and README updates
+- [x] MenuVerse API integration with separate Firebase configuration
+- [x] MenuVerse data services (eateries, menu items, order placement)
+- [x] React hooks for MenuVerse data fetching (useEateries, useMenuItems, etc.)
+- [x] MenuVerse demo pages (restaurant listing, detail page with cart)
+- [x] Shopping cart functionality with order placement
+- [x] MenuVerse integration documentation and README
 
 TODO
+- [x] Resolve Firebase API key error (check console settings and restrictions) - ✅ WORKING
+- [ ] Replace main home page with MenuVerse data integration
 - [ ] Branding/domain scrub and content updates
 - [ ] next.config image remotePatterns review and tighten
 - [ ] Convert any legacy fetches to use NEXT_PUBLIC_SERVER_URL consistently
-- [ ] Add tests (unit + a couple of e2e routes: home, restaurant list, checkout)
+- [ ] Integrate authenticatedFetch into real API calls across the app
+- [ ] Add mobile responsiveness QA for auth flows
+- [ ] Add tests (unit + a couple of e2e routes: home, restaurant list, checkout, auth)
 - [ ] Performance budget and basic Web Vitals tracking
 
 ## sqlite-backend (GraphQL + SQLite)

@@ -15,6 +15,13 @@ export default function Header() {
         </Link>
 
         <nav className="flex items-center gap-3">
+          <Link
+            href="/menuverse-demo"
+            className="hidden sm:block px-3 py-1.5 rounded-lg text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+          >
+            MenuVerse Demo
+          </Link>
+          
           {!user ? (
             <Link
               href="/login"
