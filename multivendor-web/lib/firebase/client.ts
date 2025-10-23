@@ -16,10 +16,30 @@ export function getFirebaseApp() {
     throw new Error('Firebase API key is missing. Check your NEXT_PUBLIC_FIREBASE_API_KEY environment variable.');
   }
   
-  if (!getApps().length) {
-    return initializeApp(firebaseConfig);
+  if (!firebaseConfig.authDomain || !firebaseConfig.projectId) {
+    throw new Error('Firebase configuration is incomplete. Check your environment variables.');
   }
-  return getApp();
+  
+  try {
+    // Check if default app already exists
+    const existingApps = getApps();
+    const defaultApp = existingApps.find(app => app.name === '[DEFAULT]');
+    
+    if (defaultApp) {
+      return defaultApp;
+    }
+    
+    // If no apps exist, initialize the default app
+    if (existingApps.length === 0) {
+      return initializeApp(firebaseConfig);
+    }
+    
+    // If apps exist but no default, get the default
+    return getApp();
+  } catch (error) {
+    console.error('Error initializing Firebase app:', error);
+    throw error;
+  }
 }
 
 export function getFirebaseAuth() {

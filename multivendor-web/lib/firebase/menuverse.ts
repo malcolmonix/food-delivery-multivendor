@@ -27,6 +27,15 @@ export function getMenuverseApp() {
       return existingApp;
     }
     
+    // Validate config before initializing
+    const requiredFields = ['apiKey', 'authDomain', 'projectId'];
+    for (const field of requiredFields) {
+      if (!menuverseConfig[field]) {
+        console.warn(`MenuVerse ${field} is missing. Check your environment variables.`);
+        return null;
+      }
+    }
+    
     // Initialize new MenuVerse app
     return initializeApp(menuverseConfig, 'menuverse');
   } catch (error) {
