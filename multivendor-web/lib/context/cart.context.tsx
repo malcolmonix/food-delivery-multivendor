@@ -117,17 +117,22 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     } else {
       // New API: addItem(item)
       const item = itemOrRestaurantId as CartItem;
+      console.log('🛒 Cart: Adding item via new API:', item);
+      
       setItems(prev => {
         const existingItem = prev.find(i => i.id === item.id);
         if (existingItem) {
+          console.log('🛒 Cart: Item exists, updating quantity');
           return prev.map(i =>
             i.id === item.id ? { ...i, quantity: i.quantity + item.quantity } : i
           );
         }
+        console.log('🛒 Cart: New item, adding to cart');
         return [...prev, item];
       });
       
       if (item.restaurantId && !restaurantId) {
+        console.log('🛒 Cart: Setting restaurant ID:', item.restaurantId);
         setRestaurantId(item.restaurantId);
       }
     }

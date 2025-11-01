@@ -5,6 +5,8 @@ import {
   faSliders,
   faWallet,
   faHeadset,
+  faStore,
+  faUtensils,
 } from '@fortawesome/free-solid-svg-icons';
 
 export const SUPER_ADMIN_MENU_ITEMS: ISidebarMenuItem[] = [
@@ -15,6 +17,36 @@ export const SUPER_ADMIN_MENU_ITEMS: ISidebarMenuItem[] = [
     isParent: true,
     icon: faHome,
     isClickable: true,
+  },
+  {
+    text: 'Restaurants',
+    label: 'Restaurants',
+    route: '/stores',
+    isParent: true,
+    icon: faUtensils,
+    subMenu: [
+      {
+        text: 'All Restaurants',
+        label: 'All Restaurants',
+        route: '/stores',
+        isParent: false,
+      },
+      {
+        text: 'Create Restaurant',
+        label: 'Create Restaurant',
+        route: '/stores/create',
+        isParent: false,
+      },
+      {
+        text: 'Menu Items',
+        label: 'Menu Items',
+        route: '/menu-items',
+        isParent: false,
+      },
+    ],
+    shouldShow: function () {
+      return this.subMenu ? this.subMenu.length > 0 : false;
+    },
   },
   {
     text: 'General',

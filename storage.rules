@@ -1,0 +1,19 @@
+rules_version = '2';
+
+// Craft rules based on data in your Firestore database
+// allow write: if firestore.get(
+//    /databases/(default)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Allow uploads to restaurants folder for any authenticated user
+    // In production, you should add proper authentication checks
+    match /restaurants/{restaurantId}/{allPaths=**} {
+      allow read, write: if true; // For development - should be more restrictive in production
+    }
+    
+    // Allow read access to all files
+    match /{allPaths=**} {
+      allow read: if true;
+    }
+  }
+}

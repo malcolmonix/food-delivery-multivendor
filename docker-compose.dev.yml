@@ -1,0 +1,74 @@
+# Docker Compose file for development environment
+version: '3.8'
+
+services:
+  # Development SQLite Backend
+  sqlite-backend:
+    build:
+      context: ./sqlite-backend
+      dockerfile: Dockerfile
+      target: deps
+    environment:
+      - NODE_ENV=development
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:3001
+      - DB_FILE=/data/enatega.db
+      - PORT=4000
+    volumes:
+      - ./sqlite-backend:/app
+      - sqlite_node_modules:/app/node_modules
+      - ./enatega.db:/data/enatega.db
+    ports:
+      - '4000:4000'
+    command: npm run dev
+    tty: true
+
+  # Development Web Application
+  web:
+    build:
+      context: ./multivendor-web
+      dockerfile: Dockerfile
+      target: deps
+    volumes:
+      - ./multivendor-web:/app
+      - web_node_modules:/app/node_modules
+    ports:
+      - '3000:3000'
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=1
+      - NEXT_PUBLIC_SERVER_URL=http://localhost:4000/
+    depends_on:
+      - sqlite-backend
+    command: npm run dev
+    tty: true
+
+  # Development Admin Panel
+  admin:
+    build:
+      context: ./multivendor-admin
+      dockerfile: Dockerfile
+      target: deps
+    volumes:
+      - ./multivendor-admin:/app
+      - admin_node_modules:/app/node_modules
+    ports:
+      - '3001:3000'
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=1
+      - NEXT_PUBLIC_SERVER_URL=http://localhost:4000/
+      - NEXT_PUBLIC_WS_SERVER_URL=ws://localhost:4000/
+    depends_on:
+      - sqlite-backend
+    command: npm run dev
+    tty: true
+    user: "node"
+
+volumes:
+  web_node_modules:
+  admin_node_modules:
+  sqlite_node_modules:
+
+networks:
+  default:
+    driver: bridge

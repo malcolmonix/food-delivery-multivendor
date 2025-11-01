@@ -1,0 +1,18 @@
+version: '3.9'
+services:
+  menuverse:
+    image: ghcr.io/malcolmonix/menuverse:latest
+    container_name: menuverse
+    restart: unless-stopped
+    ports:
+      - '3002:3000'
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+    networks:
+      - web
+
+networks:
+  web:
+    driver: bridge

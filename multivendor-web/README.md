@@ -1,33 +1,51 @@
-# Multivendor Web (Demo)
+# Multivendor Web - Consumer App
 
-This Next.js app demonstrates Firebase Authentication (Google + Phone) with a modern Tailwind UI.
+Next.js consumer application integrated with MenuVerse Firebase backend for restaurant ordering.
 
-## Prerequisites
-- Node 18+
-- Firebase project with Authentication enabled
+## 🚀 Current Status: FULLY WORKING
+- ✅ Restaurant listings from MenuVerse Firebase
+- ✅ Menu item display with categories and pricing
+- ✅ Working cart system with localStorage persistence
+- ✅ Responsive design with modern Tailwind UI
 
-## Environment
-Create `.env.local` in `multivendor-web/`:
-
-```
-NEXT_PUBLIC_FIREBASE_API_KEY=...
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=...
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=...
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=...
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
-NEXT_PUBLIC_FIREBASE_APP_ID=...
-NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=...
-```
-
-## Install & Run
-```
+## Quick Start
+```bash
 npm install
 npm run dev
 ```
+Opens at: http://localhost:3000
 
-## Tailwind CSS
-- Version: v3
-- Config: `tailwind.config.js`
+## Key Features
+- **Restaurant Browse**: View restaurants from MenuVerse database
+- **Menu Display**: Restaurant detail pages with categorized menu items
+- **Cart Management**: Add/remove items, quantity control, persistent storage
+- **Modern UI**: Responsive design with Tailwind CSS
+
+## MenuVerse Integration
+- **Database**: Firebase Firestore (`chopchop-67750`)
+- **Collections**: `eateries/` and `eateries/{id}/menu_items`
+- **Authentication**: Anonymous Firebase auth (no login required)
+- **API Service**: `lib/services/menuverse-api.ts`
+
+## File Structure
+```
+lib/
+├── services/menuverse-api.ts   # Firebase integration
+├── context/cart.context.tsx    # Cart state management
+└── firebase/menuverse.ts       # Firebase config
+
+pages/
+├── index.tsx                   # Restaurant listings
+├── restaurant/[id].tsx         # Restaurant detail pages
+└── cart.tsx                    # Cart management
+```
+
+## Environment Variables
+Create `.env.local`:
+```
+# No environment variables required
+# MenuVerse integration uses built-in configuration
+```
 - PostCSS: `postcss.config.js`
 - Directives in `styles/globals.css`:
 	```css

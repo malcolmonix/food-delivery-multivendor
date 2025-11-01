@@ -3,6 +3,9 @@
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
   "/": "pages/index.js",
-  "/firebase-test": "pages/firebase-test.js",
+  "/api/images/[...imagePath]": "pages/api/images/[...imagePath].js",
+  "/restaurant/[id]": "pages/restaurant/[id].js",
+  "/cart": "pages/cart.js",
+  "/checkout": "pages/checkout.js",
   "/login": "pages/login.js"
 }

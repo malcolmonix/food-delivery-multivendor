@@ -3,6 +3,7 @@ import { useFirebaseAuth } from '@/lib/context/firebase-auth.context';
 import { useFormValidation, commonValidations } from '@/lib/utils/validation';
 import { useToast } from '@/lib/context/toast.context';
 import { LoadingButton } from '@/lib/components/loading';
+import { ProfileAddressManager } from '../lib/components/profile-address-manager';
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -13,6 +14,7 @@ function ProfilePage() {
   const { showToast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState<'profile' | 'addresses' | 'orders'>('profile');
 
   const form = useFormValidation(
     {
@@ -29,7 +31,7 @@ function ProfilePage() {
 
   const handleSave = async () => {
     if (!form.validateAll()) {
-      showToast('Please fix form errors', 'error');
+      showToast('error', 'Please fix form errors');
       return;
     }
 
@@ -39,11 +41,11 @@ function ProfilePage() {
       // TODO: Add update profile mutation
       await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
 
-      showToast('Profile updated successfully!', 'success');
+      showToast('success', 'Profile updated successfully!');
       setIsEditing(false);
     } catch (error) {
       console.error('Profile update error:', error);
-      showToast('Failed to update profile', 'error');
+      showToast('error', 'Failed to update profile');
     } finally {
       setIsSaving(false);
     }
@@ -122,7 +124,46 @@ function ProfilePage() {
             </div>
           </div>
 
+          {/* Tab Navigation */}
+          <div className="mb-6">
+            <div className="border-b border-gray-200">
+              <nav className="-mb-px flex space-x-8">
+                <button
+                  onClick={() => setActiveTab('profile')}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === 'profile'
+                      ? 'border-orange-500 text-orange-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  👤 Profile Info
+                </button>
+                <button
+                  onClick={() => setActiveTab('addresses')}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === 'addresses'
+                      ? 'border-orange-500 text-orange-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  📍 Delivery Addresses
+                </button>
+                <button
+                  onClick={() => setActiveTab('orders')}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === 'orders'
+                      ? 'border-orange-500 text-orange-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  📦 Order History
+                </button>
+              </nav>
+            </div>
+          </div>
+
           {/* Profile Info Card */}
+          {activeTab === 'profile' && (
           <div className="bg-white/80 backdrop-blur-xl shadow-xl rounded-3xl overflow-hidden border border-orange-100">
             <div className="px-6 py-6">
               <div className="flex items-center justify-between mb-6">
@@ -238,8 +279,24 @@ function ProfilePage() {
             </div>
           </div>
         </div>
+          )}
 
-        {/* Orders Section */}
+          {/* Address Management Section */}
+          {activeTab === 'addresses' && (
+            <div className="bg-white/80 backdrop-blur-xl shadow-xl rounded-3xl overflow-hidden border border-orange-100">
+              <div className="px-6 py-5 bg-gradient-to-r from-orange-50 to-red-50 border-b border-orange-100">
+                <h2 className="text-xl font-bold text-gray-900 flex items-center">
+                  📍 Delivery Addresses
+                </h2>
+              </div>
+              <div className="p-6">
+                <ProfileAddressManager />
+              </div>
+            </div>
+          )}
+
+          {/* Orders Section */}
+          {activeTab === 'orders' && (
         <div className="bg-white/80 backdrop-blur-xl shadow-xl rounded-3xl overflow-hidden border border-orange-100">
           <div className="px-6 py-5 bg-gradient-to-r from-orange-50 to-red-50 border-b border-orange-100">
             <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
@@ -261,6 +318,7 @@ function ProfilePage() {
             </div>
           </div>
         </div>
+          )}
       </div>
     </div>
     </div>

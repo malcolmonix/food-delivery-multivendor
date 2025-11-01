@@ -8,3 +8,12 @@ body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Robo
 * { box-sizing: border-box; }
 a { color: inherit; text-decoration: none; }
 button { cursor: pointer; }
+
+/* Line clamp utility for text truncation */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

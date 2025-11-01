@@ -29,13 +29,8 @@ export function getFirebaseApp() {
       return defaultApp;
     }
     
-    // If no apps exist, initialize the default app
-    if (existingApps.length === 0) {
-      return initializeApp(firebaseConfig);
-    }
-    
-    // If apps exist but no default, get the default
-    return getApp();
+    // If no default app exists, initialize it
+    return initializeApp(firebaseConfig);
   } catch (error) {
     console.error('Error initializing Firebase app:', error);
     throw error;

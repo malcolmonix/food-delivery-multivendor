@@ -1,12 +1,18 @@
 # Multivendor Food Delivery System
 
-A brand-neutral, open-source multivendor food ordering and delivery stack. This repository removes third-party branding and external promotional links. See `ARCHIVE.md` for legacy modules archived under `archive/`.
+A simplified, working multivendor food ordering platform integrated with MenuVerse Firebase backend.
 
-- Web (Next.js) in `multivendor-web/`
-- Admin (Next.js) in `multivendor-admin/`
-- GraphQL API (SQLite) in `sqlite-backend/`
+## 🚀 Current Status: FULLY WORKING
+- ✅ **Restaurant Listings**: Shows restaurants from MenuVerse Firebase database
+- ✅ **Menu Display**: Restaurant detail pages with menu items from nested collections
+- ✅ **Cart System**: Working cart with add/remove items, quantity management
+- ✅ **MenuVerse Integration**: Complete Firebase integration with proper collection structure
 
-For local development and containerized runs, check `docker-compose.yml` and the per-app READMEs. External links and vendor badges have been intentionally removed as part of the rebranding effort.
+## 🎯 Core Components
+- **Web Frontend** (`multivendor-web/`) - Next.js consumer app with MenuVerse integration
+- **Admin Dashboard** (`multivendor-admin/`) - Next.js admin interface
+- **MenuVerse Integration** - Firebase backend for restaurants and menu data
+- **SQLite Backend** (`sqlite-backend/`) - Legacy GraphQL API (being phased out)
 
 ---
 <hr/>
@@ -35,9 +41,9 @@ For local development and containerized runs, check `docker-compose.yml` and the
 
 Our food delivery system also comes with the following:
 
-- Enatega Multi vendor Customer App
-- Enatega Multi vendor Rider App
-- Enatega Multi vendor Restaurant App
+- Customer App
+- Rider App
+- Restaurant App
 - Customer Food Ordering Website
 - Admin Web Dashboard
 - Application ProgramInterface Server

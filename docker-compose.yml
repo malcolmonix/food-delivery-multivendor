@@ -1,60 +1,170 @@
 services:
-  sqlite-backend:
-    build:
-      context: ./sqlite-backend
-      dockerfile: Dockerfile
-    environment:
-      - NODE_ENV=development
-      # Allow local dev via browser on host
-      - CORS_ORIGINS=http://localhost:3000,http://localhost:3001
-      # Persist DB outside the container
-      - DB_FILE=/data/enatega.db
-      - PORT=4000
-    volumes:
-      - ./enatega.db:/data/enatega.db
-    ports:
-      - '4000:4000'
-    tty: true
-
-  web:
+  # Chop Chop - Customer Food Delivery App (multivendor-web)
+  chopchop:
     build:
       context: ./multivendor-web
-    volumes:
-      - ./multivendor-web:/app
-      - web_node_modules:/app/node_modules
+      dockerfile: Dockerfile
     ports:
-      - '3000:3000'
+      - "3000:3000"
     environment:
-      - NODE_ENV=development
-      - CHOKIDAR_USEPOLLING=1
-      # Use localhost so the browser (on host) can reach the API published on port 4000
-      - NEXT_PUBLIC_SERVER_URL=http://localhost:4000/
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://api:4000/graphql
+      - NEXT_PUBLIC_MENUVERSE_URL=http://menuverse:3002
+      - NEXT_PUBLIC_APP_NAME=Chop Chop
+      - DATABASE_URL=${DATABASE_URL}
     depends_on:
-      - sqlite-backend
-    tty: true
+      - postgres
+      - redis
+      - api
+    restart: unless-stopped
+    networks:
+      - app-network
+    volumes:
+      - chopchop_uploads:/app/public/uploads
 
+  # Admin Panel for System Management (multivendor-admin)
   admin:
     build:
       context: ./multivendor-admin
-    volumes:
-      - ./multivendor-admin:/app
-      - admin_node_modules:/app/node_modules
+      dockerfile: Dockerfile
     ports:
-      - '3001:3000'
+      - "3001:3000"
     environment:
-      - NODE_ENV=development
-      - CHOKIDAR_USEPOLLING=1
-      - NEXT_PUBLIC_SERVER_URL=http://localhost:4000/
-      - NEXT_PUBLIC_WS_SERVER_URL=ws://localhost:4000/
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://api:4000/graphql
+      - NEXT_PUBLIC_CHOPCHOP_URL=http://chopchop:3000
+      - NEXT_PUBLIC_MENUVERSE_URL=http://menuverse:3002
     depends_on:
-      - sqlite-backend
-    tty: true
-    user: "node"
+      - api
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  # GraphQL API Server (dev-backend)
+  api:
+    build:
+      context: ./dev-backend
+      dockerfile: Dockerfile
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - REDIS_URL=redis://redis:6379
+      - CLOUDINARY_URL=${CLOUDINARY_URL}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+    networks:
+      - app-network
+    volumes:
+      - api_uploads:/app/uploads
+
+  # SQLite Backend (sqlite-backend)
+  sqlite-api:
+    build:
+      context: ./sqlite-backend
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+      - DATABASE_PATH=/app/data/enatega.db
+    restart: unless-stopped
+    networks:
+      - app-network
+    volumes:
+      - sqlite_data:/app/data
+
+  # MenuVerse - Restaurant/Vendor Management Platform
+  menuverse:
+    build:
+      context: ./MenuVerse
+      dockerfile: Dockerfile
+    ports:
+      - "3002:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://api:4000/graphql
+      - NEXT_PUBLIC_APP_NAME=MenuVerse
+      - NEXT_PUBLIC_CHOPCHOP_URL=http://chopchop:3000
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
+      - FIREBASE_PRIVATE_KEY=${FIREBASE_PRIVATE_KEY}
+      - FIREBASE_CLIENT_EMAIL=${FIREBASE_CLIENT_EMAIL}
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis for caching and sessions
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Nginx reverse proxy and load balancer
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+      - ./nginx/html:/usr/share/nginx/html
+      - chopchop_uploads:/usr/share/nginx/html/uploads/chopchop
+      - api_uploads:/usr/share/nginx/html/uploads/api
+    depends_on:
+      - chopchop
+      - admin
+      - api
+      - menuverse
+    restart: unless-stopped
+    networks:
+      - app-network
 
 volumes:
-  web_node_modules:
-  admin_node_modules:
+  postgres_data:
+  redis_data:
+  chopchop_uploads:
+  api_uploads:
+  sqlite_data:
 
 networks:
-  default:
+  app-network:
     driver: bridge

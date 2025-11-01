@@ -7,6 +7,8 @@ export type RestaurantCardProps = {
   name: string;
   image?: string | null;
   logo?: string | null;
+  logoUrl?: string | null;  // New field from admin panel
+  bannerUrl?: string | null; // New field from admin panel
   cuisines?: string[];
   reviewAverage?: number | null;
   deliveryTime?: number | null; // minutes
@@ -33,6 +35,8 @@ export default function RestaurantCard(props: RestaurantCardProps) {
     name,
     image,
     logo,
+    logoUrl,
+    bannerUrl,
     cuisines,
     reviewAverage,
     deliveryTime,
@@ -43,13 +47,46 @@ export default function RestaurantCard(props: RestaurantCardProps) {
 
   const url = href || `/restaurant/${encodeURIComponent(id)}`;
   const closed = isActive === false || isAvailable === false;
+  
+  // Helper function to properly resolve image URLs
+  const getImageUrl = (url: string | undefined): string => {
+    if (!url) return '';
+    
+    // If it's already a full URL (http/https), return as is
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    
+    // If it's a data URL (base64), return as is
+    if (url.startsWith('data:')) {
+      return url;
+    }
+    
+    // If it's a relative path from admin panel uploads
+    if (url.startsWith('/uploads/') || url.startsWith('uploads/')) {
+      const cleanPath = url.startsWith('/') ? url.slice(1) : url;
+      return `/api/images/${cleanPath}`;
+    }
+    
+    // If it looks like a filename from uploads directory
+    if (url.includes('_') && (url.endsWith('.jpg') || url.endsWith('.jpeg') || url.endsWith('.png') || url.endsWith('.gif'))) {
+      return `/api/images/uploads/restaurants/${url}`;
+    }
+    
+    // Default: treat as relative to current domain
+    return url;
+  };
+  
+  // Use logoUrl/bannerUrl from admin panel, fallback to old image/logo fields
+  const restaurantImage = getImageUrl(logoUrl || bannerUrl || image || undefined);
+  const restaurantLogo = getImageUrl(logoUrl || logo || undefined);
 
   return (
     <Link href={url} className={styles.card} title={name}>
       <div className={styles.mediaWrap}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        {image ? (
-          <img src={image} alt={name} className={styles.cover} />
+        {restaurantImage ? (
+          <img src={restaurantImage} alt={name} className={styles.cover} />
         ) : (
           <div className={styles.placeholder} aria-label="Image placeholder" />
         )}
@@ -60,9 +97,9 @@ export default function RestaurantCard(props: RestaurantCardProps) {
             <span className={`${styles.badge} ${styles.badgeDark}`}>{deliveryTime} min</span>
           ) : null}
         </div>
-        {logo ? (
+        {restaurantLogo && restaurantLogo !== restaurantImage ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={logo} alt="logo" className={styles.logo} />
+          <img src={restaurantLogo} alt="logo" className={styles.logo} />
         ) : null}
         <button className={styles.favoriteBtn} aria-label="Add to favorites" onClick={(e)=>{e.preventDefault();}}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

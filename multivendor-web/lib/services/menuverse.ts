@@ -147,13 +147,20 @@ export class MenuverseService {
       await this.ensureConnection();
       
       const menuItemsRef = collection(this.db, 'eateries', eateryId, 'menu_items');
-      const q = query(menuItemsRef, orderBy('category'), orderBy('name'));
-      
-      const querySnapshot = await getDocs(q);
+      // Simplified query to avoid index requirement - we'll sort client-side
+      const querySnapshot = await getDocs(menuItemsRef);
       const menuItems: MenuItem[] = [];
       
       querySnapshot.forEach((doc) => {
         menuItems.push({ id: doc.id, ...doc.data() } as MenuItem);
+      });
+
+      // Sort client-side by category then by name
+      menuItems.sort((a, b) => {
+        if (a.category !== b.category) {
+          return a.category.localeCompare(b.category);
+        }
+        return a.name.localeCompare(b.name);
       });
 
       return menuItems;
@@ -171,11 +178,7 @@ export class MenuverseService {
       await this.ensureConnection();
       
       const menuItemsRef = collection(this.db, 'eateries', eateryId, 'menu_items');
-      const q = query(
-        menuItemsRef, 
-        where('category', '==', category), 
-        orderBy('name')
-      );
+      const q = query(menuItemsRef, where('category', '==', category));
       
       const querySnapshot = await getDocs(q);
       const menuItems: MenuItem[] = [];
@@ -183,6 +186,9 @@ export class MenuverseService {
       querySnapshot.forEach((doc) => {
         menuItems.push({ id: doc.id, ...doc.data() } as MenuItem);
       });
+
+      // Sort client-side by name
+      menuItems.sort((a, b) => a.name.localeCompare(b.name));
 
       return menuItems;
     } catch (error) {
@@ -200,11 +206,20 @@ export class MenuverseService {
       
       const ordersRef = collection(this.db, 'eateries', eateryId, 'orders');
       
-      // Prepare order data with defaults
+      // Prepare order data with defaults and tracking
       const newOrder = {
         ...orderData,
         status: orderData.status || 'Pending',
+        deliveryStatus: 'order_received',
         createdAt: serverTimestamp(),
+        trackingUpdates: [
+          {
+            status: 'order_received',
+            timestamp: serverTimestamp(),
+            message: 'Order received and confirmed by restaurant',
+            location: 'Restaurant'
+          }
+        ]
       };
 
       const docRef = await addDoc(ordersRef, newOrder);
